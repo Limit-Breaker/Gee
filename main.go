@@ -2,10 +2,24 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"gee"
 )
+
+//
+func middlewareLog() gee.HandlerFunc {
+	return func(c *gee.Context) {
+		// Start timer
+		t := time.Now()
+		// if a server error occurred
+		c.Next()
+		// Calculate resolution time
+		log.Printf("[%d], cost %s in %v for group v1", c.StatusCode, c.Req.RequestURI, time.Since(t))
+	}
+}
 
 func main() {
 	fmt.Println("start Gee ...")
@@ -21,6 +35,8 @@ func main() {
 	})
 
 	v1 := engine.Group("/v1")
+	// 使用中间件
+	v1.Use(middlewareLog())
 	{
 		v1.GET("/hello", func(c *gee.Context) {
 			// expect /hello?name=makabaka

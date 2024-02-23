@@ -86,10 +86,16 @@ func (r *router) handle(c *Context) {
 	node, params := r.getRoute(c.Method, c.Path)
 	if node != nil {
 		c.Params = params
+		// 找到请求处理函数
 		key := c.Method + "-" + node.pattern
 		fmt.Printf("r.handers: %+v \n", r.handlers)
-		r.handlers[key](c)
+		// 将请求处理函数也加入到context.handler中
+		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
-		c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+		c.handlers = append(c.handlers, func(c *Context) {
+			c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+		})
 	}
+	// 执行中间件链路函数和请求处理函数
+	c.Next()
 }

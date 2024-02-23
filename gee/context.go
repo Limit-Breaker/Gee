@@ -16,6 +16,9 @@ type Context struct {
 	Path   string
 	Method string
 	Params map[string]string
+	// middleware
+	handlers []HandlerFunc
+	index    int
 	// response info
 	StatusCode int
 }
@@ -26,7 +29,21 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
 	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	// 如果中间件只作用于请求函数处理前，可以省略调用c.Next()
+	for ; c.index < len(c.handlers); c.index++ {
+		c.handlers[c.index](c)
+	}
+}
+
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
 }
 
 func (c *Context) PostForm(key string) string {
