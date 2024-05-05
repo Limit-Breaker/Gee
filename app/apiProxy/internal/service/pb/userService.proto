@@ -1,0 +1,23 @@
+syntax = "proto3"; // 版本声明，使用Protocol Buffers v3版本
+
+// 分号前是编译生成的.pb.go文件存放地址，分号后是所属包名，这个包名覆盖默认包名
+option go_package = "/internal/service/pb;pb"; // 指定编译生成的文件目录，也可以指定golang包名
+
+package pb; // 默认包名
+
+
+// 定义服务
+service UserService {
+  // GetCaptcha 方法
+  rpc GetCaptcha (GetCaptchaRequest) returns (GetCaptchaResponse) {}
+}
+
+// 请求消息
+message GetCaptchaRequest {
+  string mobile = 1;
+}
+
+// 响应消息
+message GetCaptchaResponse {
+  string code = 1;
+}

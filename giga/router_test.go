@@ -1,4 +1,4 @@
-package gee
+package giga
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package gee
+package giga
 
 import (
 	"encoding/json"
@@ -9,17 +9,19 @@ import (
 type H map[string]interface{}
 
 type Context struct {
-	// origin objects
+	// 基础的输入输出，标准库提供
 	Writer http.ResponseWriter
 	Req    *http.Request
-	// request info
+	// 从req提取的参数
 	Path   string
 	Method string
 	Params map[string]string
+
+	Keys map[string]interface{}
 	// middleware
 	handlers []HandlerFunc
 	index    int
-	// response info
+	// 返回
 	StatusCode int
 }
 
@@ -35,7 +37,6 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 
 func (c *Context) Next() {
 	c.index++
-	// 如果中间件只作用于请求函数处理前，可以省略调用c.Next()
 	for ; c.index < len(c.handlers); c.index++ {
 		c.handlers[c.index](c)
 	}

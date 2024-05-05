@@ -1,4 +1,4 @@
-package gee
+package giga
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 // roots key eg, roots['GET'] roots['POST']
-// handlers key eg, handlers['GET-/p/:lang/doc'], handlers['POST-/p/book']
+// handlers key eg, ['GET-/index/:id/detail', 'POST-/user/login']
 type router struct {
 	roots    map[string]*node
 	handlers map[string]HandlerFunc
@@ -28,7 +28,7 @@ func parsePattern(pattern string) []string {
 	for _, item := range vs {
 		if item != "" {
 			parts = append(parts, item)
-			// 通配*。例如 /static/*filepath, 只能允许一个*作为最后一个节点
+			// 通配*。例如 /path/*filepath, 只能允许一个*作为最后一个节点
 			if item[0] == '*' {
 				break
 			}
@@ -52,8 +52,8 @@ func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 }
 
 // 解析了:和*两种匹配符的参数，返回一个 map 。
-// 例如/p/go/doc匹配到/p/:lang/doc，解析结果为：{lang: "go"}，
-// /static/css/geektutu.css匹配到/static/*filepath，解析结果为{filepath: "css/geektutu.css"}。
+// 例如/index/1/detail匹配到/index/:id/detail，返回的解析结果为：{id: "1"}
+// 例如path/file/log 匹配到/path/*filepath，解析结果为{filepath: "file/log"}
 func (r *router) getRoute(method string, path string) (*node, map[string]string) {
 	searchParts := parsePattern(path)
 	params := make(map[string]string, 0)
@@ -69,11 +69,11 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 	}
 	parts := parsePattern(node.pattern)
 	for index, part := range parts {
-		// 例如/p/go/doc匹配到/p/:lang/doc，解析结果为：{lang: "go"}
+		// 例如/index/1/detail匹配到/index/:id/detail，返回的解析结果为：{id: "1"}
 		if part[0] == ':' {
 			params[part[1:]] = searchParts[index]
 		}
-		// 例如/static/css/geektutu.css匹配到/static/*filepath，解析结果为{filepath: "css/geektutu.css"}
+		// 例如path/file/log 匹配到/path/*filepath，解析结果为{filepath: "file/log"}
 		if part[0] == '*' && len(part) > 1 {
 			params[part[1:]] = strings.Join(searchParts[index:], "/")
 			break
